@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One‑Button Racing</title>
+  <style>
+    :root { --bg:#0b0e12; --fg:#e6edf3; --acc:#6cf }
+    html, body { height:100% }
+    body {
+      margin:0;
+      display:grid;
+      place-items:center;
+      background:var(--bg);
+      color:var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+    .wrap { max-width: 720px; padding: 24px; text-align:center }
+    a { color: var(--acc); text-decoration: none }
+    button {
+      background: var(--acc);
+      border: 0; color: #001018; padding: 10px 16px; border-radius: 10px;
+      font-weight: 600; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>One‑Button Racing</h1>
+    <p>This is a minimal web page. Next we’ll add a canvas and physics.</p>
+    <button id="ping">Click me</button>
+    <p id="out"></p>
+  </div>
+  <script>
+    // Tiny JS so you can see it works
+    document.getElementById('ping').addEventListener('click', () => {
+      const out = document.getElementById('out');
+      out.textContent = 'Button clicked at ' + new Date().toLocaleTimeString();
+    });
+  </script>
+</body>
+</html>

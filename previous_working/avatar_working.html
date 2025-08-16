@@ -39,10 +39,10 @@
     <img class="bg" src="assets/LEBRON.png" alt="Basketball Avatar">
   </div>
 
-  <div class="hint">Use A / D or ◀ / ▶ — Press Space/Enter/Click to select</div>
+  <div class="hint">Use A / D or ◀ / ▶</div>
 
   <script>
-    // Frames (1..4)
+    // Frames (1..4) with left/right navigation only
     const frames = [
       document.getElementById('guy'),
       document.getElementById('monkey'),
@@ -51,12 +51,8 @@
     ];
 
     let i = 0;
-    function show(idx){
-      frames.forEach(f=>f.classList.remove('active'));
-      frames[idx].classList.add('active');
-    }
+    function show(idx){ frames.forEach(f=>f.classList.remove('active')); frames[idx].classList.add('active'); }
 
-    // --- Navigation: A/D or ◀/▶ ---
     document.addEventListener('keydown', (e)=>{
       if (e.repeat) return;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') {
@@ -67,22 +63,6 @@
         if (i > 0) { i--; show(i); }
       }
     });
-
-    // --- Confirm selection: Space / Enter / Click ---
-    function confirmSelection(){
-      const selectedAvatar = i + 1; // 1..4
-      try { localStorage.setItem('selectedAvatar', String(selectedAvatar)); } catch (_) {}
-      window.location.href = 'select_racetrack.html';
-    }
-
-    document.addEventListener('keydown', (e)=>{
-      if (e.code === 'Space' || e.code === 'Enter') {
-        e.preventDefault();
-        confirmSelection();
-      }
-    });
-
-    document.addEventListener('click', ()=>{ confirmSelection(); });
   </script>
 </body>
 </html>

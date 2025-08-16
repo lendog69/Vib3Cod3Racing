@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VIB3RAC3RS — Select Racetrack</title>
+  <style>
+    :root { --bg:#0b0e12 }
+    html, body { height:100%; margin:0; background:var(--bg); }
+    .screen { display:none; position:absolute; inset:0; }
+    .screen img {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      max-width:80%; height:auto; display:block;
+    }
+    .active { display:block; }
+  </style>
+</head>
+<body>
+  <!-- FRAME 1: Select screen -->
+  <div id="frame1" class="screen active">
+    <img src="assets/SELECTYOURRACETRACK.png" alt="Select Your Racetrack">
+  </div>
+  <!-- FRAME 2: Grand Prix -->
+  <div id="frame2" class="screen">
+    <img src="assets/GRANDPRIS.png" alt="Grand Prix">
+  </div>
+
+  <script>
+    const f1 = document.getElementById('frame1');
+    const f2 = document.getElementById('frame2');
+
+    // After 2 seconds, switch to Grand Prix frame
+    setTimeout(()=>{
+      f1.classList.remove('active');
+      f2.classList.add('active');
+      enableProceed();
+    }, 2000);
+
+    function enableProceed(){
+      function go(){ window.location.href = 'GRANDPRIS.html'; }
+      document.addEventListener('keydown', go, { once:true });
+      document.addEventListener('click', go, { once:true });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VIB3RAC3RS</title>
+  <style>
+    :root { --bg:#0b0e12; --fg:#e6edf3; --acc:#6cf }
+    html, body { height:100%; margin:0; }
+    body {
+      margin:0;
+      background:var(--bg);
+      color:var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+    }
+    .screen {
+      display:none;
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+    }
+    .screen img.bg {
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      max-width:80%;
+      height:auto;
+      display:block;
+    }
+    .clickbox {
+      position:absolute;
+      left:50%;
+      bottom:15%;
+      transform:translateX(-50%);
+      max-width:18%;
+    }
+    .clickbox img {
+      width:100%;
+      height:auto;
+      display:block;
+    }
+    .active { display:block; }
+  </style>
+</head>
+<body>
+  <!-- FRAME 1: start screen: logo + clickbox -->
+  <div id="start" class="screen active">
+    <img class="bg" src="assets/LOGO2.png" alt="Logo">
+    <div class="clickbox">
+      <img src="assets/CLICKBOX.png" alt="Click Anywhere To Play">
+    </div>
+  </div>
+
+  <!-- FRAME 2: Choose your racecar screen -->
+  <div id="choose" class="screen">
+    <img class="bg" src="assets/CHOOSEYOURRACECAR.png" alt="Choose Your Rac3car">
+  </div>
+
+  <!-- FRAME 3: Red car -->
+  <div id="redcar" class="screen">
+    <img class="bg" src="assets/1.RED.png" alt="Red Racecar">
+  </div>
+  <!-- FRAME 4: Yellow car -->
+  <div id="yellowcar" class="screen">
+    <img class="bg" src="assets/2.YELLOW.png" alt="Yellow Car">
+  </div>
+  <!-- FRAME 5: White car -->
+  <div id="whitecar" class="screen">
+    <img class="bg" src="assets/3.WHITE.png" alt="White Car">
+  </div>
+
+  <script>
+    const start   = document.getElementById('start');
+    const choose  = document.getElementById('choose');
+    const redcar  = document.getElementById('redcar');
+    const yellow  = document.getElementById('yellowcar');
+    const white   = document.getElementById('whitecar');
+
+    // Helper to show exactly one screen
+    function showOnly(el) {
+      [start, choose, redcar, yellow, white].forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // Car frames (FRAME 3–5)
+    const carFrames = [redcar, yellow, white];
+    let carIndex = 0;              // 0=red,1=yellow,2=white
+
+    // Guards to prevent double-binding / double-start
+    let started = false;
+    let navEnabled = false;
+    let confirmEnabled = false;
+
+    function enableCarNavigation() {
+      if (navEnabled) return; // prevent multiple listeners
+      navEnabled = true;
+
+      function onNav(e) {
+        if (e.repeat) return; // ignore key auto-repeat
+        const code = e.code;
+        if (code === 'ArrowRight' || code === 'KeyD') {
+          e.preventDefault();
+          if (carIndex < carFrames.length - 1) {
+            carIndex += 1;
+            showOnly(carFrames[carIndex]);
+          }
+        } else if (code === 'ArrowLeft' || code === 'KeyA') {
+          e.preventDefault();
+          if (carIndex > 0) {
+            carIndex -= 1;
+            showOnly(carFrames[carIndex]);
+          }
+        }
+      }
+
+      document.addEventListener('keydown', onNav);
+    }
+
+    function confirmSelection() {
+      const selectedCar = carIndex + 1; // map 0..2 -> 1..3
+      try { localStorage.setItem('selectedCar', String(selectedCar)); } catch (_) {}
+      // Redirect to avatar selection page
+      window.location.href = 'avatar.html';
+    }
+
+    function enableConfirm() {
+      if (confirmEnabled) return;
+      confirmEnabled = true;
+
+      function onConfirmKey(e) {
+        const code = e.code;
+        if (code === 'Space' || code === 'Enter') {
+          e.preventDefault();
+          confirmSelection();
+        }
+      }
+
+      function onConfirmClick() {
+        confirmSelection();
+      }
+
+      document.addEventListener('keydown', onConfirmKey);
+      document.addEventListener('click', onConfirmClick);
+    }
+
+    function goToChoose() {
+      if (started) return; // ensure this runs only once
+      started = true;
+      // FRAME 1 -> FRAME 2
+      showOnly(choose);
+      // After 1.5s, go to FRAME 3 and enable navigation + confirm
+      setTimeout(() => {
+        carIndex = 0;
+        showOnly(carFrames[carIndex]);
+        enableCarNavigation();
+        enableConfirm();
+      }, 1500);
+    }
+
+    // Start interaction: first click or any key triggers FRAME 2 sequence
+    document.addEventListener('click', goToChoose, { once: true });
+    document.addEventListener('keydown', goToChoose, { once: true });
+  </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VIB3RAC3RS</title>
+  <style>
+    :root { --bg:#0b0e12; --fg:#e6edf3; --acc:#6cf }
+    html, body { height:100%; margin:0; }
+    body {
+      display:grid;
+      place-items:center;
+      background:var(--bg);
+      color:var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+    }
+    .screen {
+      display:none;
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      max-width:80%;
+    }
+    .screen img { width:100%; height:auto; display:block; }
+    .active { display:block; }
+  </style>
+</head>
+<body>
+  <!-- Start screen -->
+  <div id="start" class="screen active">
+    <img src="assets/CLICKBOX.png" alt="Click Anywhere To Play">
+  </div>
+
+  <!-- Choose your racecar screen -->
+  <div id="choose" class="screen">
+    <img src="assets/CHOOSEYOURRACECAR.png" alt="Choose Your Rac3car">
+  </div>
+
+  <!-- Red car screen -->
+  <div id="redcar" class="screen">
+    <img src="assets/1.RED.png" alt="Red Racecar">
+  </div>
+
+  <script>
+    const start = document.getElementById('start');
+    const choose = document.getElementById('choose');
+    const redcar = document.getElementById('redcar');
+
+    function goToChoose() {
+      start.classList.remove('active');
+      choose.classList.add('active');
+      setTimeout(() => {
+        choose.classList.remove('active');
+        redcar.classList.add('active');
+      }, 3000);
+    }
+
+    document.addEventListener('click', goToChoose, { once: true });
+    document.addEventListener('keydown', goToChoose, { once: true });
+  </script>
+</body>
+</html>

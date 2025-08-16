@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One-Button Racing</title>
+  <style>
+    :root { --bg:#0b0e12; --fg:#e6edf3; --acc:#6cf }
+    html, body { height:100% }
+    body {
+      margin:0;
+      display:grid;
+      place-items:center;
+      background:var(--bg);
+      color:var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+
+      /* Background image (contain) */
+      background-image: url("assets/LOGO2.png");
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 100vh;
+      position: relative;
+    }
+    .wrap { max-width: 720px; padding: 24px; text-align:center; }
+    a { color: var(--acc); text-decoration: none }
+    .clickbox {
+      position: absolute;
+      left: 50%;
+      bottom: 15%; /* lower third */
+      transform: translateX(-50%);
+      max-width: 18%; /* half of 36% */
+    }
+    .clickbox img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="clickbox">
+    <img src="assets/CLICKBOX.png" alt="Click Anywhere To Play">
+  </div>
+</body>
+</html>

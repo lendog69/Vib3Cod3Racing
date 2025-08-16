@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VIB3RAC3RS — GRANDPRIS (One-Button)</title>
+  <style>
+    html, body { height:100%; margin:0; background:#0b0e12; }
+    body { display:grid; place-items:center; overflow:hidden; }
+    canvas { width:min(100vw,700px); height:100vh; image-rendering:pixelated; background:#0b0e12; display:block; }
+    .hud { position:fixed; top:8px; left:8px; color:#e6edf3; font:600 14px system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+    .hint { position:fixed; right:12px; bottom:12px; color:#e6edf3; opacity:.8; font:500 12px system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+  </style>
+</head>
+<body>
+  <div class="hud">Score: <span id="score">0</span> · Speed: <span id="spd">1.0x</span></div>
+  <div class="hint">One-Button: click / Space / Enter = next lane · R to restart</div>
+  <canvas id="game" width="350" height="700"></canvas>
+
+  <script>
+    // ===== One-Button Endless Lanes =====
+    const W = 350, H = 700;
+    const LANES = 3;
+    const LANE_W = 90;
+    const ROAD_W = LANE_W * LANES;
+    const roadX = (W - ROAD_W) / 2;
+    const CAR_W = 52, CAR_H = 32;
+
+    const cvs = document.getElementById('game');
+    const ctx = cvs.getContext('2d');
+    const $score = document.getElementById('score');
+    const $spd = document.getElementById('spd');
+
+    // Car sprite by selection
+    const selectedCar = Number(localStorage.getItem('selectedCar')) || 1;
+    const carImg = new Image();
+    const carSrcMap = { 1:'assets/1.RED.png', 2:'assets/2.YELLOW.png', 3:'assets/3.WHITE.png' };
+    carImg.src = carSrcMap[selectedCar] || carSrcMap[1];
+
+    // Game state
+    let state = 'ready'; // ready | running | gameover
+    let lane = 1;        // current lane index
+    let targetLane = 1;  // tween target lane
+    let laneXPos = laneToX(lane); // actual x for smooth tween
+    let y = H - 110;     // player y
+    let t = 0;           // ticks
+    let score = 0;
+    let speed = 1.0;     // global speed multiplier
+
+    let obstacles = []; // {lane,y,w,h,s}
+
+    function laneToX(i){ return roadX + i*LANE_W + (LANE_W - CAR_W)/2; }
+
+    function reset(){
+      state = 'running';
+      lane = targetLane = 1; laneXPos = laneToX(lane);
+      obstacles = []; t = 0; score = 0; speed = 1.0;
+      $score.textContent = '0'; $spd.textContent = speed.toFixed(1)+'x';
+    }
+
+    // Input: one button cycles lanes 0→1→2→0...
+    function press(){
+      if (state === 'ready') { reset(); return; }
+      if (state === 'gameover') { reset(); return; }
+      if (state !== 'running') return;
+      targetLane = (targetLane + 1) % LANES;
+    }
+
+    addEventListener('keydown', e=>{
+      if (e.repeat) return;
+      if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); press(); }
+      else if (e.code === 'KeyR') { e.preventDefault(); reset(); }
+    });
+    addEventListener('click', ()=> press());
+
+    // Spawn logic: cones and slow cars
+    function spawn(){
+      const type = Math.random() < 0.7 ? 'cone' : 'block';
+      const L = Math.floor(Math.random()*LANES);
+      const baseSpeed = 2.2 + Math.random()*1.2;
+      obstacles.push({ lane:L, y:-40, w:CAR_W, h:type==='cone'?18:CAR_H, s: baseSpeed });
+    }
+
+    // Draw road
+    function drawRoad(scroll){
+      ctx.fillStyle = '#111722'; ctx.fillRect(roadX,0,ROAD_W,H);
+      ctx.fillStyle = '#3b465a'; ctx.fillRect(roadX-6,0,6,H); ctx.fillRect(roadX+ROAD_W,0,6,H);
+      ctx.fillStyle = '#9aa7bd';
+      for(let l=1;l<LANES;l++){
+        const x = roadX + l*LANE_W - 2;
+        for(let y=(scroll%40)-40; y<H; y+=40) ctx.fillRect(x,y,4,20);
+      }
+    }
+
+    function drawCar(x,y){
+      if (carImg.complete && carImg.naturalWidth) ctx.drawImage(carImg,x,y,CAR_W,CAR_H);
+      else { ctx.fillStyle = ['#e74c3c','#f1c40f','#ecf0f1'][selectedCar-1]||'#e74c3c'; ctx.fillRect(x,y,CAR_W,CAR_H); }
+    }
+
+    function drawObstacle(o){
+      const x = laneToX(o.lane);
+      if (o.h < CAR_H) { // cone
+        ctx.fillStyle = '#ffd400';
+        ctx.fillRect(x + CAR_W*0.3, o.y, CAR_W*0.4, o.h);
+      } else { // block car
+        ctx.fillStyle = '#c0d0e0';
+        ctx.fillRect(x, o.y, CAR_W, CAR_H);
+      }
+    }
+
+    function aabb(ax,ay,aw,ah, bx,by,bw,bh){ return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by; }
+
+    // Loop
+    function tick(){
+      requestAnimationFrame(tick);
+      ctx.clearRect(0,0,W,H);
+
+      if (state === 'ready'){
+        drawRoad(0);
+        drawCar(laneXPos,y);
+        ctx.fillStyle='#e6edf3'; ctx.font='bold 16px monospace';
+        ctx.fillText('One-Button Racing', 12, 30);
+        ctx.fillText('Press Space / click', 12, 52);
+        return;
+      }
+
+      if (state === 'running'){
+        t++;
+        // Speed ramp
+        if (t % 600 === 0 && speed < 2.5) { speed += 0.1; $spd.textContent = speed.toFixed(1)+'x'; }
+
+        // tween lane position
+        const targetX = laneToX(targetLane);
+        laneXPos += (targetX - laneXPos) * 0.2; // ease
+
+        // Scroll road
+        const scroll = t * 3 * speed; drawRoad(scroll);
+
+        // Spawn
+        if (t % Math.max(20, 70 - Math.floor(speed*10)) === 0) spawn();
+
+        // Update & draw obstacles
+        for (const o of obstacles) { o.y += o.s * 2.2 * speed; drawObstacle(o); }
+        obstacles = obstacles.filter(o => o.y < H+60);
+
+        // Player
+        drawCar(laneXPos, y);
+
+        // Collision
+        for (const o of obstacles) {
+          if (aabb(laneXPos,y,CAR_W,CAR_H, laneToX(o.lane),o.y, o.w, o.h)) {
+            state = 'gameover'; break;
+          }
+        }
+
+        // Score
+        score += Math.ceil(1*speed);
+        if ((t & 7)===0) $score.textContent = String(score);
+        return;
+      }
+
+      if (state === 'gameover'){
+        drawRoad(t*3*speed);
+        for (const o of obstacles) drawObstacle(o);
+        drawCar(laneXPos,y);
+        ctx.fillStyle='#ffd400'; ctx.font='bold 18px monospace';
+        ctx.fillText('Crashed! R to retry', 14, 40);
+        return;
+      }
+    }
+
+    tick();
+  </script>
+</body>
+</html>

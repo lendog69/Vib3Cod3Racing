@@ -1,4 +1,7 @@
-/index.html — just mounts the game + includes one entry script.
+
+
+
+
 
 /assets/ — your PNGs, audio, fonts (already using this).
 
